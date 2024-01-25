@@ -5,7 +5,7 @@ const refresh_token_key = process.env.refresh_token_key;
 
 const auth = (req, res, next) => {
     const access_token = req.cookies["masai_access_token"];
-    const refresh_token = req.cookies["masai_refresh_token"]
+    const refresh_token = req.cookies["masai_refresh_token"];
     const { username, email } = req.body;
 
     try {
@@ -16,11 +16,12 @@ const auth = (req, res, next) => {
                         if (err) {
                             res.status(401).send("Please login again");
                         } else {
-                            const new_access_token = jwt.sign({ username, email }, access_token_key, { expiresIn: 60 });
-                            res.access_token = new_access_token;
+                            const new_access_token = jwt.sign({ username, email }, access_token_key, { expiresIn: "60s" });
+
+                            // Set the new_access_token in response cookies or headers
+                            res.cookie("masai_access_token", new_access_token, { httpOnly: true });
                             console.log("Refresh token is valid");
                             next();
-                           
                         }
                     });
                 } else {
@@ -31,7 +32,7 @@ const auth = (req, res, next) => {
             }
         });
     } catch (error) {
-        return res.status(500).send({ "msg": error });
+        return res.status(500).send({ "msg": error.message });
     }
 };
 
